@@ -27,11 +27,11 @@
     settings = {
       terminal.vt = 1;
       default_session = {
-        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /tmp/phosh.log 2>&1'";
+        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /var/log/phosh.log 2>&1'";
         user = "nixos";
       };
       initial_session = {
-        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /tmp/phosh.log 2>&1'";
+        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /var/log/phosh.log 2>&1'";
         user = "nixos";
       };
     };

@@ -59,11 +59,20 @@ in
   users.users.nixos = {
     isNormalUser = true;
     password = "nixos";
+    shell = pkgs.fish;
     extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" "dialout" "feedbackd" ];
   };
 
+  programs.fish.enable = true;
+
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = false;
+
+  hardware.bluetooth.enable = true;
+
+  boot.kernelModules = [ "usbhid" "evdev" ];
+
+  services.libinput.enable = true;
 
   services.xserver.desktopManager.phosh = {
     enable = true;
@@ -108,6 +117,7 @@ in
         "sm/puri/phosh" = {
           osk-unfold-delay = 0.5;
           app-filter-mode = mkEmptyArray type.string;
+          auth-app = "password";
         };
       };
     }
@@ -146,20 +156,37 @@ in
   systemd.user.services.pipewire-pulse.environment.ALSA_CONFIG_UCM2 = ucm-env;
   systemd.user.services.wireplumber.environment.ALSA_CONFIG_UCM2 = ucm-env;
 
+  virtualisation.waydroid.enable = true;  # Android kontejner pro APK
+
   services.journald.extraConfig = "Storage=persistent";
 
   environment.systemPackages = with pkgs; [
+    # Mobile shell & settings
     phosh
     phosh-mobile-settings
+
+    # Apps
+    firefox-mobile   # mobile-optimized Firefox (Wayland)
+    snapshot         # GNOME camera app (Wayland-native)
+    vlc
+    tor
+    torsocks
+
+    # Audio UCM for SDM845
     alsa-ucm-conf
     sdm845-alsa-ucm
+
+    # CLI tools
     git
     vim
     wget
     curl
-    lazygit
-    neovim
-    kitty
+    iw           # wireless tools
+    iproute2     # ip command
+
+    # Terminal
+    ghostty
+    fish
   ];
 
   system.stateVersion = "25.11";

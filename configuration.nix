@@ -1,83 +1,138 @@
 # Minimal configuration for OnePlus 6 (enchilada) NixOS Mobile
 # Focus on essentials: SSH, wireless, and basic tools
 
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
+let
+  ucm-env = "/run/current-system/sw/share/alsa/ucm2";
+  sdm845-alsa-ucm =
+    pkgs.runCommand "sdm845-alsa-ucm"
+      {
+        src = pkgs.fetchFromGitLab {
+          name = "sdm845-alsa-ucm";
+          owner = "sdm845-mainline";
+          repo = "alsa-ucm-conf";
+          rev = "1b8d290e5aa2ca16b7f2fa8d74910ad19ef88b3a";
+          sha256 = "sha256-Kg4vxDrli/ffNeUwDBL5GfdJsbwFRPAUieQEsjVKADw=";
+        };
+        postPatch = "";
+      }
+      ''
+        mkdir -p $out/share
+        ln -s $src $out/share/alsa
+      '';
+in
 {
-  # Allow unfree packages (needed for OnePlus firmware)
   nixpkgs.config.allowUnfree = true;
 
-  # Enable SSH server (essential for mobile device access)
   services.openssh.enable = true;
-  services.openssh.settings.PermitRootLogin = "yes"; # For initial setup
-  services.openssh.settings.PasswordAuthentication = true; # For initial setup
-
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-  };
+  services.openssh.settings.PermitRootLogin = "yes";
+  services.openssh.settings.PasswordAuthentication = true;
 
   users.users.root.password = "nixos";
-
-  services.upower.enable = true;
-  services.accounts-daemon.enable = true;
-
-  systemd.services.phosh = {
-    after = [ "getty@tty1.service" "systemd-user-sessions.service" ];
-    conflicts = [ "getty@tty1.service" ];
-    wantedBy = [ "graphical.target" ];
-    environment = {
-      XDG_CURRENT_DESKTOP = "Phosh:GNOME";
-      XDG_SESSION_DESKTOP = "phosh";
-      XDG_SESSION_TYPE = "wayland";
-      WLR_RENDERER = "gles2";
-      WLR_NO_HARDWARE_CURSORS = "1";
-      GSETTINGS_SCHEMA_DIR = "/run/current-system/sw/share/glib-2.0/schemas";
-    };
-    serviceConfig = {
-      User = "nixos";
-      Group = "users";
-      PAMName = "login";
-      ExecStart = "${pkgs.phosh}/bin/phosh-session";
-      Restart = "on-failure";
-      StandardError = "journal";
-      StandardInput = "tty-fail";
-      StandardOutput = "journal";
-      TTYPath = "/dev/tty1";
-      TTYReset = "yes";
-      TTYVHangup = "yes";
-      TTYVTDisallocate = "yes";
-      UtmpIdentifier = "tty1";
-      UtmpMode = "user";
-      WorkingDirectory = "~";
-    };
-  };
-
-  # persistent journal — needed to read logs after rollback
-  services.journald.extraConfig = "Storage=persistent";
-
-  networking.networkmanager.enable = true;
 
   users.users.nixos = {
     isNormalUser = true;
     password = "nixos";
-    extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" ];
+    extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" "dialout" "feedbackd" ];
   };
 
-  programs.dconf.enable = true;
+  networking.networkmanager.enable = true;
+  # Phosh uses wpa_supplicant via NetworkManager, not iwd
+  networking.wireless.iwd.enable = false;
 
+  services.xserver.desktopManager.phosh = {
+    enable = true;
+    user = "nixos";
+    group = "users";
+    phocConfig = {
+      xwayland = "true";
+      outputs.DSI-1.scale = 3;
+    };
+  };
+
+  # Adreno 630 (SDM845) needs gles2 renderer and no hardware cursors
+  systemd.services.phosh.environment = {
+    WLR_RENDERER = "gles2";
+    WLR_NO_HARDWARE_CURSORS = "1";
+  };
+
+  services.upower.enable = true;
+  services.accounts-daemon.enable = true;
+  services.geoclue2.enable = true;
+  services.geoclue2.whitelistedAgents = [ "sm.puri.Phosh" ];
+
+  programs.dconf.enable = true;
+  programs.dconf.profiles.user.databases = with lib.gvariant; [
+    {
+      settings = {
+        "org/gnome/desktop/interface" = {
+          color-scheme = "prefer-dark";
+          clock-show-date = false;
+        };
+        "org/gnome/desktop/session" = {
+          idle-delay = mkUint32 60;
+        };
+        "org/gnome/settings-daemon/plugins/power" = {
+          sleep-inactive-ac-type = "nothing";
+          sleep-inactive-battery-type = "nothing";
+        };
+        "sm/puri/phosh" = {
+          osk-unfold-delay = 0.5;
+          app-filter-mode = mkEmptyArray type.string;
+        };
+      };
+    }
+  ];
+
+  # SDM845-specific audio: fix crackling and set UCM config
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+    alsa.enable = true;
+    wireplumber.extraConfig = {
+      alsa-sdm845 = {
+        "monitor.alsa.rules" = [
+          {
+            matches = [
+              { "node.name" = "~alsa_input.*"; }
+              { "node.name" = "~alsa_output.*"; }
+            ];
+            actions.update-props = {
+              "audio.format" = "S16LE";
+              "audio.rate" = 48000;
+              "api.alsa.period-size" = 4096;
+              "api.alsa.period-num" = 6;
+              "api.alsa.headroom" = 512;
+            };
+          }
+        ];
+      };
+    };
+  };
+  security.rtkit.enable = true;
+
+  environment.pathsToLink = [ "/share/alsa/ucm2" ];
+  environment.variables.ALSA_CONFIG_UCM2 = ucm-env;
+  systemd.user.services.pipewire.environment.ALSA_CONFIG_UCM2 = ucm-env;
+  systemd.user.services.pipewire-pulse.environment.ALSA_CONFIG_UCM2 = ucm-env;
+  systemd.user.services.wireplumber.environment.ALSA_CONFIG_UCM2 = ucm-env;
+
+  services.journald.extraConfig = "Storage=persistent";
 
   environment.systemPackages = with pkgs; [
     phosh
+    phosh-mobile-settings
+    pkgs.alsa-ucm-conf
+    sdm845-alsa-ucm
     git
     vim
     wget
     curl
     lazygit
-    asciiquarium
     neovim
     kitty
   ];
 
   system.stateVersion = "25.11";
-} 
+}

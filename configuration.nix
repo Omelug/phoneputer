@@ -32,6 +32,7 @@
       XDG_SESSION_TYPE = "wayland";
       WLR_RENDERER = "gles2";
       WLR_NO_HARDWARE_CURSORS = "1";
+      GSETTINGS_SCHEMA_DIR = "/run/current-system/sw/share/glib-2.0/schemas";
     };
     serviceConfig = {
       User = "nixos";

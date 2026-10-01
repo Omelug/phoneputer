@@ -22,24 +22,34 @@
   services.upower.enable = true;
   services.accounts-daemon.enable = true;
 
-  services.greetd = {
-    enable = true;
-    settings = {
-      terminal.vt = 1;
-      default_session = {
-        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /home/nixos/phosh.log 2>&1'";
-        user = "nixos";
-      };
-      initial_session = {
-        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 G_MESSAGES_DEBUG=all ${pkgs.phosh}/bin/phosh-session > /home/nixos/phosh.log 2>&1'";
-        user = "nixos";
-      };
+  systemd.services.phosh = {
+    after = [ "getty@tty1.service" "systemd-user-sessions.service" ];
+    conflicts = [ "getty@tty1.service" ];
+    wantedBy = [ "graphical.target" ];
+    environment = {
+      XDG_CURRENT_DESKTOP = "Phosh:GNOME";
+      XDG_SESSION_DESKTOP = "phosh";
+      XDG_SESSION_TYPE = "wayland";
+      WLR_RENDERER = "gles2";
+      WLR_NO_HARDWARE_CURSORS = "1";
     };
-  };
-
-  systemd.services.greetd.serviceConfig = {
-    StartLimitBurst = 3;
-    StartLimitIntervalSec = "60s";
+    serviceConfig = {
+      User = "nixos";
+      Group = "users";
+      PAMName = "login";
+      ExecStart = "${pkgs.phosh}/bin/phosh-session";
+      Restart = "on-failure";
+      StandardError = "journal";
+      StandardInput = "tty-fail";
+      StandardOutput = "journal";
+      TTYPath = "/dev/tty1";
+      TTYReset = "yes";
+      TTYVHangup = "yes";
+      TTYVTDisallocate = "yes";
+      UtmpIdentifier = "tty1";
+      UtmpMode = "user";
+      WorkingDirectory = "~";
+    };
   };
 
   # persistent journal — needed to read logs after rollback

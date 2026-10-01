@@ -19,14 +19,29 @@
 
   users.users.root.password = "nixos";
 
-  # Phosh — mobile shell (touch-friendly, built for phones)
+  services.upower.enable = true;
+  services.accounts-daemon.enable = true;
+
   services.greetd = {
     enable = true;
     settings.default_session = {
-      command = "${pkgs.phosh}/bin/phosh";
+      command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh";
       user = "nixos";
     };
   };
+
+  # ponytail: restart limit so phosh crash-loop doesn't starve SSH
+  systemd.services.greetd.serviceConfig = {
+    Restart = "on-failure";
+    RestartSec = "10s";
+    StartLimitBurst = 3;
+    StartLimitIntervalSec = "60s";
+  };
+
+  # persistent journal — needed to read logs after rollback
+  services.journald.extraConfig = "Storage=persistent";
+
+  networking.networkmanager.enable = true;
 
   users.users.nixos = {
     isNormalUser = true;

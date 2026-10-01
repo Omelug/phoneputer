@@ -63,6 +63,10 @@ in
     net-tools = prev.nettools;
     svgo = prev.nodePackages.svgo;
     libx11 = prev.xorg.libX11;
+    # mobile-nixos passes luaSupport to libinput but newer nixpkgs removed it
+    libinput = prev.libinput // {
+      override = args: prev.libinput.override (builtins.removeAttrs args [ "luaSupport" ]);
+    };
   })];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];

@@ -30,10 +30,7 @@
     };
   };
 
-  # ponytail: restart limit so phosh crash-loop doesn't starve SSH
   systemd.services.greetd.serviceConfig = {
-    Restart = "on-failure";
-    RestartSec = "10s";
     StartLimitBurst = 3;
     StartLimitIntervalSec = "60s";
   };

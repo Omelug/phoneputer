@@ -60,7 +60,7 @@ in
     isNormalUser = true;
     password = "nixos";
     shell = pkgs.fish;
-    extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" "dialout" "feedbackd" ];
+    extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" "dialout" "feedbackd" "seat" ];
   };
 
   programs.fish.enable = true;
@@ -69,6 +69,8 @@ in
   networking.wireless.iwd.enable = false;
 
   hardware.bluetooth.enable = true;
+
+  services.seatd.enable = true;
 
   boot.kernelModules = [ "usbhid" "evdev" ];
 

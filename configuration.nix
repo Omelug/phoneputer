@@ -1,7 +1,7 @@
 # Minimal configuration for OnePlus 6 (enchilada) NixOS Mobile
 # Focus on essentials: SSH, wireless, and basic tools
 
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, mobile-nixos, sdm845-linux, ... }:
 
 let
   ucm-env = "/run/current-system/sw/share/alsa/ucm2";
@@ -22,6 +22,14 @@ let
         mkdir -p $out/share
         ln -s $src $out/share/alsa
       '';
+
+  # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
+  # using mobile-nixos kernel config but with the newer source tree.
+  customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {}).overrideAttrs (_: {
+    version = "7.2.0";
+    modDirVersion = "7.2.0";
+    src = sdm845-linux;
+  });
 
   # Compile all GSettings schemas phosh needs into one directory.
   # Needed because: (1) phosh-session checks sm.puri.Phosh before launching
@@ -50,6 +58,8 @@ in
 {
   nixpkgs.config.allowUnfree = true;
 
+  boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
+
   services.openssh.enable = true;
   services.openssh.settings.PermitRootLogin = "yes";
   services.openssh.settings.PasswordAuthentication = true;
@@ -71,6 +81,11 @@ in
   hardware.bluetooth.enable = true;
 
   services.seatd.enable = true;
+
+  services.logind.extraConfig = ''
+    HandlePowerKey=ignore
+    HandleSuspendKey=ignore
+  '';
 
   boot.kernelModules = [ "usbhid" "evdev" ];
 
@@ -110,7 +125,7 @@ in
           clock-show-date = false;
         };
         "org/gnome/desktop/session" = {
-          idle-delay = mkUint32 60;
+          idle-delay = mkUint32 0;  # disable screen blanking (DPMS wake broken on SDM845)
         };
         "org/gnome/settings-daemon/plugins/power" = {
           sleep-inactive-ac-type = "nothing";
@@ -119,7 +134,6 @@ in
         "sm/puri/phosh" = {
           osk-unfold-delay = 0.5;
           app-filter-mode = mkEmptyArray type.string;
-          auth-app = "password";
         };
       };
     }

@@ -58,6 +58,8 @@ in
 {
   nixpkgs.config.allowUnfree = true;
 
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
 
   services.openssh.enable = true;

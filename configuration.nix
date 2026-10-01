@@ -27,11 +27,11 @@
     settings = {
       terminal.vt = 1;
       default_session = {
-        command = "${pkgs.phosh}/bin/phosh-session";
+        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 exec ${pkgs.phosh}/bin/phosh-session'";
         user = "nixos";
       };
       initial_session = {
-        command = "${pkgs.phosh}/bin/phosh-session";
+        command = "${pkgs.bash}/bin/bash -c 'WLR_RENDERER=gles2 WLR_NO_HARDWARE_CURSORS=1 exec ${pkgs.phosh}/bin/phosh-session'";
         user = "nixos";
       };
     };

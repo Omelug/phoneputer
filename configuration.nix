@@ -65,7 +65,7 @@ in
     libx11 = prev.xorg.libX11;
     # mobile-nixos passes luaSupport to libinput but newer nixpkgs removed it
     libinput = prev.libinput // {
-      override = args: prev.libinput.override (builtins.removeAttrs args [ "luaSupport" ]);
+      override = args: prev.libinput.override (builtins.removeAttrs args [ "luaSupport" "wacomSupport" ]);
     };
   })];
 

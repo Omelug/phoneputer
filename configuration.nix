@@ -5,6 +5,7 @@
 
 let
   ucm-env = "/run/current-system/sw/share/alsa/ucm2";
+
   sdm845-alsa-ucm =
     pkgs.runCommand "sdm845-alsa-ucm"
       {
@@ -21,6 +22,30 @@ let
         mkdir -p $out/share
         ln -s $src $out/share/alsa
       '';
+
+  # Compile all GSettings schemas phosh needs into one directory.
+  # Needed because: (1) phosh-session checks sm.puri.Phosh before launching
+  # gnome-session, and (2) gnome-session starts phosh via systemd --user which
+  # doesn't inherit XDG_DATA_DIRS from the phosh-session wrapper.
+  phoshSchemas = pkgs.runCommand "phosh-gsettings-schemas" {
+    nativeBuildInputs = [ pkgs.glib.dev ];
+  } ''
+    mkdir -p $out
+    for pkg in \
+      ${pkgs.gsettings-desktop-schemas} \
+      ${pkgs.phosh} \
+      ${pkgs.phoc} \
+      ${pkgs.gtk3} \
+      ${pkgs.gtk4} \
+      ${pkgs.gnome-shell} \
+      ${pkgs.gnome-control-center} \
+      ${pkgs.feedbackd} \
+      ${pkgs.gnome-session}; do
+      find "$pkg/share/gsettings-schemas" -name "*.xml" 2>/dev/null | \
+        while IFS= read -r f; do cp "$f" "$out/"; done || true
+    done
+    glib-compile-schemas "$out"
+  '';
 in
 {
   nixpkgs.config.allowUnfree = true;
@@ -38,7 +63,6 @@ in
   };
 
   networking.networkmanager.enable = true;
-  # Phosh uses wpa_supplicant via NetworkManager, not iwd
   networking.wireless.iwd.enable = false;
 
   services.xserver.desktopManager.phosh = {
@@ -51,11 +75,15 @@ in
     };
   };
 
-  # Adreno 630 (SDM845) needs gles2 renderer and no hardware cursors
+  # Adreno 630 (SDM845): gles2 renderer + no hw cursors + compiled schemas
   systemd.services.phosh.environment = {
     WLR_RENDERER = "gles2";
     WLR_NO_HARDWARE_CURSORS = "1";
+    GSETTINGS_SCHEMA_DIR = "${phoshSchemas}";
   };
+
+  # Propagate to systemd user session so gnome-session's child phosh gets it too
+  environment.variables.GSETTINGS_SCHEMA_DIR = "${phoshSchemas}";
 
   services.upower.enable = true;
   services.accounts-daemon.enable = true;
@@ -123,7 +151,7 @@ in
   environment.systemPackages = with pkgs; [
     phosh
     phosh-mobile-settings
-    pkgs.alsa-ucm-conf
+    alsa-ucm-conf
     sdm845-alsa-ucm
     git
     vim

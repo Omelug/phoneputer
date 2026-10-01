@@ -24,9 +24,16 @@
 
   services.greetd = {
     enable = true;
-    settings.default_session = {
-      command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh";
-      user = "nixos";
+    settings = {
+      terminal.vt = 1;
+      default_session = {
+        command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh";
+        user = "nixos";
+      };
+      initial_session = {
+        command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh";
+        user = "nixos";
+      };
     };
   };
 

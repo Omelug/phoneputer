@@ -27,11 +27,11 @@
     settings = {
       terminal.vt = 1;
       default_session = {
-        command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh-session";
+        command = "${pkgs.phosh}/bin/phosh-session";
         user = "nixos";
       };
       initial_session = {
-        command = "${pkgs.dbus}/bin/dbus-run-session -- ${pkgs.phosh}/bin/phosh-session";
+        command = "${pkgs.phosh}/bin/phosh-session";
         user = "nixos";
       };
     };

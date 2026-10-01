@@ -59,7 +59,10 @@ let
 in
 {
   nixpkgs.config.allowUnfree = true;
-  nixpkgs.overlays = [(final: prev: { net-tools = prev.nettools; })];
+  nixpkgs.overlays = [(final: prev: {
+    net-tools = prev.nettools;
+    svgo = prev.nodePackages.svgo or prev.svgo;
+  })];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 

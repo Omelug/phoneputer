@@ -25,7 +25,9 @@ let
 
   # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
   # using mobile-nixos kernel config but with the newer source tree.
-  customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {}).overrideAttrs (_: {
+  customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
+    net-tools = pkgs.nettools;
+  }).overrideAttrs (_: {
     version = "7.2.0";
     modDirVersion = "7.2.0";
     src = sdm845-linux;

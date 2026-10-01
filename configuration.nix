@@ -20,10 +20,12 @@
   users.users.root.password = "nixos";
 
   # Phosh — mobile shell (touch-friendly, built for phones)
-  services.phosh = {
+  services.greetd = {
     enable = true;
-    user = "nixos";
-    group = "users";
+    settings.default_session = {
+      command = "${pkgs.phosh}/bin/phosh";
+      user = "nixos";
+    };
   };
 
   users.users.nixos = {

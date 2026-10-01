@@ -1,7 +1,7 @@
 # Minimal configuration for OnePlus 6 (enchilada) NixOS Mobile
 # Focus on essentials: SSH, wireless, and basic tools
 
-{ config, lib, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
   # Allow unfree packages (needed for OnePlus firmware)
@@ -12,43 +12,28 @@
   services.openssh.settings.PermitRootLogin = "yes"; # For initial setup
   services.openssh.settings.PasswordAuthentication = true; # For initial setup
 
-  # Enable audio
-  # PipeWire is enabled by default, but the audio is very quiet with it
-  services.pipewire.enable = lib.mkForce false;
-  # Make sure to select "Speakers Output" as the output device in the settings
-  services.pulseaudio.enable = true;
+  services.pipewire = {
+    enable = true;
+    pulse.enable = true;
+  };
 
-  # Set root password for SSH access
-  users.users.root.password = "nixtheplanet";
+  users.users.root.password = "nixos";
 
-  # Enable GNOME Desktop Environment
-  services.xserver.enable = true;
-  services.desktopManager.gnome.enable = true;
-  services.displayManager.gdm.enable = true;
+  # Phosh — mobile shell (touch-friendly, built for phones)
+  services.phosh = {
+    enable = true;
+    user = "nixos";
+    group = "users";
+  };
 
-  # Enable GNOME Keyring for password management
-  services.gnome.gnome-keyring.enable = true;
+  users.users.nixos = {
+    isNormalUser = true;
+    password = "nixos";
+    extraGroups = [ "wheel" "video" "audio" "input" "networkmanager" ];
+  };
 
-  # Enable dconf for GNOME settings
   programs.dconf.enable = true;
 
-  # Remove unwanted GNOME applications
-  environment.gnome.excludePackages = with pkgs; [
-    baobab      # disk usage analyzer
-    cheese      # photo booth
-    eog         # image viewer
-    epiphany    # web browser
-    simple-scan # document scanner
-    totem       # video player
-    yelp        # help viewer
-    evince      # document viewer
-    file-roller # archive manager
-    geary       # email client
-    seahorse    # password manager
-    gnome-calculator gnome-calendar gnome-characters gnome-clocks gnome-contacts
-    gnome-font-viewer gnome-logs gnome-maps gnome-music gnome-screenshot
-    gnome-system-monitor gnome-weather gnome-disk-utility pkgs.gnome-connections
-  ];
 
   # Minimal essential packages
   environment.systemPackages = with pkgs; [

@@ -66,8 +66,8 @@
   programs.dconf.enable = true;
 
 
-  # Minimal essential packages
   environment.systemPackages = with pkgs; [
+    phosh
     git
     vim
     wget

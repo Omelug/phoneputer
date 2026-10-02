@@ -19,13 +19,19 @@
   outputs = { self, nixpkgs, mobile-nixos, sdm845-linux, ... }:
     let
       system = "aarch64-linux";
+      # ponytail: patch mobile-nixos source to drop meson flags not in libxkbcommon-1.10.0
+      mobile-nixos-patched = (nixpkgs.legacyPackages.${system}).applyPatches {
+        name = "mobile-nixos";
+        src = mobile-nixos;
+        patches = [ ./patches/fix-libxkbcommon-flags.patch ];
+      };
     in {
       nixosConfigurations = {
         phoneputer = nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit mobile-nixos sdm845-linux; };
+          specialArgs = { mobile-nixos = mobile-nixos-patched; inherit sdm845-linux; };
           modules = [
-            (import "${mobile-nixos}/lib/configuration.nix" { device = "oneplus-enchilada"; })
+            (import "${mobile-nixos-patched}/lib/configuration.nix" { device = "oneplus-enchilada"; })
             ./configuration.nix
           ];
         };

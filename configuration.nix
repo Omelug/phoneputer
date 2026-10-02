@@ -34,17 +34,17 @@ let
     net-tools = pkgs.nettools;
     inherit sdm845-linux;
   }).overrideAttrs (old: {
-    nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.ccache ];
+    nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.ccache pkgs.python3 ];
     preConfigure = ''
       export CCACHE_DIR=/nix/var/cache/ccache
       export CCACHE_UMASK=007
       export CCACHE_COMPRESS=1
     '' + (old.preConfigure or "");
-    makeFlags = map (f:
-      if lib.hasPrefix "CC=" f then "CC=${pkgs.ccache}/bin/ccache ${lib.removePrefix "CC=" f}"
-      else if lib.hasPrefix "HOSTCC=" f then "HOSTCC=${pkgs.ccache}/bin/ccache ${lib.removePrefix "HOSTCC=" f}"
-      else f
-    ) (old.makeFlags or []);
+    # ponytail: use makeFlagsArray not makeFlags — array expansion preserves spaces in CC=ccache /path/cc
+    preBuild = ''
+      makeFlagsArray+=("CC=${pkgs.ccache}/bin/ccache ${pkgs.stdenv.cc}/bin/${pkgs.stdenv.cc.targetPrefix}cc")
+      makeFlagsArray+=("HOSTCC=${pkgs.ccache}/bin/ccache ${pkgs.buildPackages.stdenv.cc}/bin/${pkgs.buildPackages.stdenv.cc.targetPrefix}cc")
+    '' + (old.preBuild or "");
   });
 
   # Compile all GSettings schemas phosh needs into one directory.

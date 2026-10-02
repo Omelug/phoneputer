@@ -37,6 +37,7 @@ let
     stdenv = pkgs.ccacheStdenv;
   }).overrideAttrs (old: {
     nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.python3 ];
+    patches = (old.patches or []) ++ [ ./patches/fix-firmware-paths.patch ];
     preConfigure = ''
       export CCACHE_DIR=/nix/var/cache/ccache
       export CCACHE_UMASK=007
@@ -76,6 +77,7 @@ let
 in
 {
   hardware.enableRedistributableFirmware = true;
+
 
   nixpkgs.config.allowUnfree = true;
   nixpkgs.overlays = [(final: prev: {

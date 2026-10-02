@@ -23,6 +23,9 @@ let
         ln -s $src $out/share/alsa
       '';
 
+  # Device-specific firmware from sdm845-mainline/firmware-oneplus-sdm845
+  oneplusFw = pkgs.callPackage "${mobile-nixos}/devices/oneplus-enchilada/firmware" {};
+
   # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
   # using mobile-nixos kernel config but with the newer source tree.
   # WARNING: ccache is impure — reads/writes a persistent cache outside the Nix sandbox.
@@ -77,12 +80,14 @@ in
 {
   hardware.enableRedistributableFirmware = true;
 
-  # linux-firmware has SDM845 firmware at qcom/sdm845/; the 7.2.0 DT requests it at
-  # qcom/sdm845/OnePlus/enchilada/ — a single symlink bridges the two
+  # 7.2.0 DT requests firmware at qcom/sdm845/OnePlus/enchilada/;
+  # copy device-specific files (oneplus6/) to that path
   hardware.firmware = [
+    oneplusFw
     (pkgs.runCommand "sdm845-enchilada-fw-compat" {} ''
-      mkdir -p $out/lib/firmware/qcom/sdm845/OnePlus
-      ln -s .. $out/lib/firmware/qcom/sdm845/OnePlus/enchilada
+      mkdir -p $out/lib/firmware/qcom/sdm845/OnePlus/enchilada
+      cp ${oneplusFw}/lib/firmware/qcom/sdm845/oneplus6/* \
+         $out/lib/firmware/qcom/sdm845/OnePlus/enchilada/
     '')
   ];
 

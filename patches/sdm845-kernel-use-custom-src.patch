@@ -13,6 +13,7 @@
 +let useCustomSrc = sdm845-linux != null; in
 +mobile-nixos.kernel-builder {
 +  version = if useCustomSrc then "7.2.0" else "6.4.0";
++  modDirVersion = if useCustomSrc then "7.2.0-next-20260820" else "6.4.0";
    configfile = ./config.aarch64;
 
 -  src = fetchFromGitLab {

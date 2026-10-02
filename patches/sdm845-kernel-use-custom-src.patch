@@ -1,6 +1,6 @@
 --- a/devices/families/sdm845-mainline/kernel/default.nix
 +++ b/devices/families/sdm845-mainline/kernel/default.nix
-@@ -1,28 +1,29 @@
+@@ -1,28 +1,31 @@
  { mobile-nixos
  , fetchFromGitLab
  , fetchpatch
@@ -45,3 +45,4 @@
 
    isModular = false;
    isCompressed = "gz";
+ }

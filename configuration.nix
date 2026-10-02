@@ -25,25 +25,23 @@ let
 
   # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
   # using mobile-nixos kernel config but with the newer source tree.
-  # WARNING: ccache is impure — it reads/writes a persistent cache outside the Nix sandbox.
-  # This breaks reproducibility: two builds with identical inputs may produce different outputs
-  # depending on cache state. Requires extra-sandbox-paths (sandbox escape).
-  # To do a guaranteed-clean build: nix build --option sandbox true --option extra-sandbox-paths ''
+  # WARNING: ccache is impure — reads/writes a persistent cache outside the Nix sandbox.
+  # Breaks reproducibility: identical inputs may produce different outputs across machines.
+  # Requires extra-sandbox-paths (controlled sandbox escape).
+  # Clean build: nix build --option extra-sandbox-paths ''
   # ponytail: version/src/patches handled in patched default.nix via sdm845-linux arg
   customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
     net-tools = pkgs.nettools;
     inherit sdm845-linux;
+    # ponytail: ccacheStdenv wraps CC correctly — avoids NixOS wrapper/assembler-mode conflicts
+    stdenv = pkgs.ccacheStdenv;
   }).overrideAttrs (old: {
-    nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.ccache pkgs.python3 ];
+    nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.python3 ];
     preConfigure = ''
       export CCACHE_DIR=/nix/var/cache/ccache
       export CCACHE_UMASK=007
       export CCACHE_COMPRESS=1
     '' + (old.preConfigure or "");
-    # ponytail: use makeFlagsArray not makeFlags — array expansion preserves spaces in CC=ccache /path/cc
-    preBuild = ''
-      makeFlagsArray+=("CC=${pkgs.ccache}/bin/ccache ${pkgs.stdenv.cc}/bin/${pkgs.stdenv.cc.targetPrefix}cc")
-    '' + (old.preBuild or "");
   });
 
   # Compile all GSettings schemas phosh needs into one directory.

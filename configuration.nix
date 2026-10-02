@@ -37,7 +37,11 @@ let
     stdenv = pkgs.ccacheStdenv;
   }).overrideAttrs (old: {
     nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.python3 ];
-    patches = (old.patches or []) ++ [ ./patches/fix-firmware-paths.patch ];
+    # ponytail: oneplus-sdm845-firmware uses oneplus6/ paths; 7.2.0 DT hardcodes OnePlus/enchilada/
+    postPatch = (old.postPatch or "") + ''
+      sed -i 's|qcom/sdm845/OnePlus/enchilada/|qcom/sdm845/oneplus6/|g' \
+        arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+    '';
     preConfigure = ''
       export CCACHE_DIR=/nix/var/cache/ccache
       export CCACHE_UMASK=007

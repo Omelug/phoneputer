@@ -1,6 +1,17 @@
 --- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
 +++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
-@@ -757,7 +757,7 @@ &gpu_zap_shader {
+@@ -385,7 +385,7 @@ &adsp_pas {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/adsp.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/adsp.mbn";
+ };
+
+@@ -738,7 +738,7 @@ &cdsp_pas {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/cdsp.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/cdsp.mbn";
  };
 
  &gpu_zap_shader {
@@ -8,4 +19,32 @@
 +	firmware-name = "qcom/sdm845/oneplus6/a630_zap.mbn";
  };
 
- &i2c3 {
+@@ -828,7 +828,7 @@ &ipa {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/ipa_fws.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/ipa_fws.mbn";
+ };
+
+@@ -884,8 +884,8 @@ &mpss {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/mba.mbn",
+-			"qcom/sdm845/OnePlus/enchilada/modem.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/mba.mbn",
++			"qcom/sdm845/oneplus6/modem.mbn";
+ };
+
+@@ -1064,7 +1064,7 @@ &slpi_pas {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/slpi.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/slpi.mbn";
+ };
+
+@@ -1591,7 +1591,7 @@ &venus {
+ 	status = "okay";
+
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/venus.mbn";
++	firmware-name = "qcom/sdm845/oneplus6/venus.mbn";
+ };

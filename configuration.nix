@@ -85,6 +85,7 @@ in
   programs.ccache.enable = true;
   nix.settings.extra-sandbox-paths = [ "/nix/var/cache/ccache" ];
 
+  mobile.boot.stage-1.kernel.package = lib.mkForce customKernel;
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
   system.boot.loader.kernelFile = "Image.gz";
 

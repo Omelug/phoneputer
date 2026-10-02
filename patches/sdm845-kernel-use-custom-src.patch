@@ -1,0 +1,46 @@
+--- a/devices/families/sdm845-mainline/kernel/default.nix
++++ b/devices/families/sdm845-mainline/kernel/default.nix
+@@ -1,28 +1,29 @@
+ { mobile-nixos
+ , fetchFromGitLab
+ , fetchpatch
++, sdm845-linux ? null
+ , ...
+ }:
+
+-mobile-nixos.kernel-builder {
+-  version = "6.4.0";
++let useCustomSrc = sdm845-linux != null; in
++mobile-nixos.kernel-builder {
++  version = if useCustomSrc then "7.2.0" else "6.4.0";
+   configfile = ./config.aarch64;
+
+-  src = fetchFromGitLab {
+-    owner = "sdm845-mainline";
+-    repo = "linux";
+-    rev = "sdm845-6.4-r1";
+-    hash = "sha256-XUYv8tOk0vsG11w8UtBKizlBZ03cbQ2QRGyZEK0ECGU=";
+-  };
++  src = if useCustomSrc then sdm845-linux else fetchFromGitLab {
++    owner = "sdm845-mainline";
++    repo = "linux";
++    rev = "sdm845-6.4-r1";
++    hash = "sha256-XUYv8tOk0vsG11w8UtBKizlBZ03cbQ2QRGyZEK0ECGU=";
++  };
+
+-  patches = [
+-    # ASoC: codecs: tas2559: Fix build
+-    (fetchpatch {
+-      url = "https://github.com/samueldr/linux/commit/d1b59edd94153ac153043fb038ccc4e6c1384009.patch";
+-      sha256 = "sha256-zu1m+WNHPoXv3VnbW16R9SwKQzMYnwYEUdp35kUSKoE=";
+-    })
+-  ];
++  patches = if useCustomSrc then [] else [
++    (fetchpatch {
++      url = "https://github.com/samueldr/linux/commit/d1b59edd94153ac153043fb038ccc4e6c1384009.patch";
++      sha256 = "sha256-zu1m+WNHPoXv3VnbW16R9SwKQzMYnwYEUdp35kUSKoE=";
++    })
++  ];
+
+   isModular = false;
+   isCompressed = "gz";

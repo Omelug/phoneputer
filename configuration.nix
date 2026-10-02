@@ -25,26 +25,11 @@ let
 
   # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
   # using mobile-nixos kernel config but with the newer source tree.
-  customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
+  # ponytail: version/src/patches handled in patched default.nix via sdm845-linux arg
+  customKernel = pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
     net-tools = pkgs.nettools;
-    # ponytail: IP_NF_RAW/IP6_NF_RAW must go here — boot.kernelPatches doesn't compose with mkForce
-    kernelPatches = [{
-      name = "iptables-raw-tables";
-      patch = null;
-      extraStructuredConfig = {
-        IP_NF_RAW  = lib.kernel.yes;
-        IP6_NF_RAW = lib.kernel.yes;
-      };
-    }];
-  }).overrideAttrs (old: {
-    version = "7.2.0";
-    modDirVersion = "7.2.0";
-    src = sdm845-linux;
-    # ponytail: tas2559 patch already merged in sdm845-linux@949f86c, drop to avoid conflict
-    patches = builtins.filter (p:
-      !(lib.hasSuffix "d1b59edd94153ac153043fb038ccc4e6c1384009.patch" (toString p))
-    ) (old.patches or []);
-  });
+    inherit sdm845-linux;
+  };
 
   # Compile all GSettings schemas phosh needs into one directory.
   # Needed because: (1) phosh-session checks sm.puri.Phosh before launching

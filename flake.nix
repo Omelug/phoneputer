@@ -23,7 +23,10 @@
       mobile-nixos-patched = (nixpkgs.legacyPackages.${system}).applyPatches {
         name = "mobile-nixos";
         src = mobile-nixos;
-        patches = [ ./patches/fix-libxkbcommon-flags.patch ];
+        patches = [
+          ./patches/fix-libxkbcommon-flags.patch
+          ./patches/sdm845-kernel-use-custom-src.patch
+        ];
       };
     in {
       nixosConfigurations = {

@@ -43,7 +43,6 @@ let
     # ponytail: use makeFlagsArray not makeFlags — array expansion preserves spaces in CC=ccache /path/cc
     preBuild = ''
       makeFlagsArray+=("CC=${pkgs.ccache}/bin/ccache ${pkgs.stdenv.cc}/bin/${pkgs.stdenv.cc.targetPrefix}cc")
-      makeFlagsArray+=("HOSTCC=${pkgs.ccache}/bin/ccache ${pkgs.buildPackages.stdenv.cc}/bin/${pkgs.buildPackages.stdenv.cc.targetPrefix}cc")
     '' + (old.preBuild or "");
   });
 

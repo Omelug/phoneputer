@@ -27,6 +27,15 @@ let
   # using mobile-nixos kernel config but with the newer source tree.
   customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
     net-tools = pkgs.nettools;
+    # ponytail: IP_NF_RAW/IP6_NF_RAW must go here — boot.kernelPatches doesn't compose with mkForce
+    kernelPatches = [{
+      name = "iptables-raw-tables";
+      patch = null;
+      extraStructuredConfig = {
+        IP_NF_RAW  = lib.kernel.yes;
+        IP6_NF_RAW = lib.kernel.yes;
+      };
+    }];
   }).overrideAttrs (old: {
     version = "7.2.0";
     modDirVersion = "7.2.0";
@@ -76,15 +85,6 @@ in
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
-
-  boot.kernelPatches = [{
-    name = "iptables-raw-tables";
-    patch = null;
-    extraStructuredConfig = {
-      IP_NF_RAW  = lib.kernel.yes;
-      IP6_NF_RAW = lib.kernel.yes;
-    };
-  }];
 
   services.openssh.enable = true;
   services.openssh.settings.PermitRootLogin = "yes";

@@ -1,6 +1,6 @@
 --- a/devices/families/sdm845-mainline/kernel/default.nix
 +++ b/devices/families/sdm845-mainline/kernel/default.nix
-@@ -1,28 +1,31 @@
+@@ -1,28 +1,30 @@
  { mobile-nixos
  , fetchFromGitLab
  , fetchpatch

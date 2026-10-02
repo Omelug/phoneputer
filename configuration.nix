@@ -37,11 +37,6 @@ let
     stdenv = pkgs.ccacheStdenv;
   }).overrideAttrs (old: {
     nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.python3 ];
-    # ponytail: oneplus-sdm845-firmware uses oneplus6/ paths; 7.2.0 DT hardcodes OnePlus/enchilada/
-    postPatch = (old.postPatch or "") + ''
-      sed -i 's|qcom/sdm845/OnePlus/enchilada/|qcom/sdm845/oneplus6/|g' \
-        arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
-    '';
     preConfigure = ''
       export CCACHE_DIR=/nix/var/cache/ccache
       export CCACHE_UMASK=007
@@ -81,6 +76,15 @@ let
 in
 {
   hardware.enableRedistributableFirmware = true;
+
+  # linux-firmware has SDM845 firmware at qcom/sdm845/; the 7.2.0 DT requests it at
+  # qcom/sdm845/OnePlus/enchilada/ — a single symlink bridges the two
+  hardware.firmware = [
+    (pkgs.runCommand "sdm845-enchilada-fw-compat" {} ''
+      mkdir -p $out/lib/firmware/qcom/sdm845/OnePlus
+      ln -s .. $out/lib/firmware/qcom/sdm845/OnePlus/enchilada
+    '')
+  ];
 
 
   nixpkgs.config.allowUnfree = true;

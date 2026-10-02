@@ -42,6 +42,12 @@ let
       export CCACHE_UMASK=007
       export CCACHE_COMPRESS=1
     '' + (old.preConfigure or "");
+    # ponytail: configfile is baked into configurePhase via Nix interpolation, can't override via
+    # overrideAttrs — use postConfigure instead to append after .config is written
+    postConfigure = (old.postConfigure or "") + ''
+      echo "CONFIG_REGULATOR_QCOM_REFGEN=y" >> "$buildRoot/.config"
+      make $makeFlags "''${makeFlagsArray[@]}" olddefconfig
+    '';
   });
 
   # Compile all GSettings schemas phosh needs into one directory.
@@ -69,6 +75,8 @@ let
   '';
 in
 {
+  hardware.enableRedistributableFirmware = true;
+
   nixpkgs.config.allowUnfree = true;
   nixpkgs.overlays = [(final: prev: {
     net-tools = prev.nettools;

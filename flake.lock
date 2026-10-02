@@ -35,7 +35,25 @@
     "root": {
       "inputs": {
         "mobile-nixos": "mobile-nixos",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "sdm845-linux": "sdm845-linux"
+      }
+    },
+    "sdm845-linux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790883525,
+        "narHash": "sha256-S2tNAb0dANRu9oRMYoumDO1u5zAkDXrM/kKwD9dwdnA=",
+        "ref": "refs/heads/sdm845-next",
+        "rev": "949f86c36a31d8619ea1b18ea82d099cd752e86b",
+        "revCount": 1481942,
+        "type": "git",
+        "url": "https://codeberg.org/sdm845/linux"
+      },
+      "original": {
+        "rev": "949f86c36a31d8619ea1b18ea82d099cd752e86b",
+        "type": "git",
+        "url": "https://codeberg.org/sdm845/linux"
       }
     }
   },

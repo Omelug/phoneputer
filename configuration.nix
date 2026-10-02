@@ -27,10 +27,14 @@ let
   # using mobile-nixos kernel config but with the newer source tree.
   customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
     net-tools = pkgs.nettools;
-  }).overrideAttrs (_: {
+  }).overrideAttrs (old: {
     version = "7.2.0";
     modDirVersion = "7.2.0";
     src = sdm845-linux;
+    # ponytail: tas2559 patch already merged in sdm845-linux@949f86c, drop to avoid conflict
+    patches = builtins.filter (p:
+      !(lib.hasSuffix "d1b59edd94153ac153043fb038ccc4e6c1384009.patch" (toString p))
+    ) (old.patches or []);
   });
 
   # Compile all GSettings schemas phosh needs into one directory.

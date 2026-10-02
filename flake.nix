@@ -26,6 +26,7 @@
         patches = [
           ./patches/fix-libxkbcommon-flags.patch
           ./patches/sdm845-kernel-use-custom-src.patch
+          ./patches/fix-initrd-symlink-conflict.patch
         ];
       };
     in {

@@ -49,6 +49,8 @@ let
     # overrideAttrs — use postConfigure instead to append after .config is written
     postConfigure = (old.postConfigure or "") + ''
       echo "CONFIG_REGULATOR_QCOM_REFGEN=y" >> "$buildRoot/.config"
+      echo "CONFIG_FW_LOADER_COMPRESS=y" >> "$buildRoot/.config"
+      echo "CONFIG_FW_LOADER_COMPRESS_ZSTD=y" >> "$buildRoot/.config"
       make $makeFlags "''${makeFlagsArray[@]}" olddefconfig
     '';
   });

@@ -25,11 +25,27 @@ let
 
   # SDM845 kernel 7.2.0 from codeberg.org/sdm845/linux (sdm845-next),
   # using mobile-nixos kernel config but with the newer source tree.
+  # WARNING: ccache is impure — it reads/writes a persistent cache outside the Nix sandbox.
+  # This breaks reproducibility: two builds with identical inputs may produce different outputs
+  # depending on cache state. Requires extra-sandbox-paths (sandbox escape).
+  # To do a guaranteed-clean build: nix build --option sandbox true --option extra-sandbox-paths ''
   # ponytail: version/src/patches handled in patched default.nix via sdm845-linux arg
-  customKernel = pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
+  customKernel = (pkgs.callPackage "${mobile-nixos}/devices/families/sdm845-mainline/kernel" {
     net-tools = pkgs.nettools;
     inherit sdm845-linux;
-  };
+  }).overrideAttrs (old: {
+    nativeBuildInputs = (old.nativeBuildInputs or []) ++ [ pkgs.ccache ];
+    preConfigure = ''
+      export CCACHE_DIR=/nix/var/cache/ccache
+      export CCACHE_UMASK=007
+      export CCACHE_COMPRESS=1
+    '' + (old.preConfigure or "");
+    makeFlags = map (f:
+      if lib.hasPrefix "CC=" f then "CC=${pkgs.ccache}/bin/ccache ${lib.removePrefix "CC=" f}"
+      else if lib.hasPrefix "HOSTCC=" f then "HOSTCC=${pkgs.ccache}/bin/ccache ${lib.removePrefix "HOSTCC=" f}"
+      else f
+    ) (old.makeFlags or []);
+  });
 
   # Compile all GSettings schemas phosh needs into one directory.
   # Needed because: (1) phosh-session checks sm.puri.Phosh before launching
@@ -68,6 +84,9 @@ in
   })];
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  # WARNING: exposes ccache dir to the Nix sandbox — see kernel ccache comment above
+  programs.ccache.enable = true;
+  nix.settings.extra-sandbox-paths = [ "/nix/var/cache/ccache" ];
 
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
 

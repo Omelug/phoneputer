@@ -77,6 +77,15 @@ in
 
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
 
+  boot.kernelPatches = [{
+    name = "iptables-raw-tables";
+    patch = null;
+    extraStructuredConfig = {
+      IP_NF_RAW  = lib.kernel.yes;
+      IP6_NF_RAW = lib.kernel.yes;
+    };
+  }];
+
   services.openssh.enable = true;
   services.openssh.settings.PermitRootLogin = "yes";
   services.openssh.settings.PasswordAuthentication = true;

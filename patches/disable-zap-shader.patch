@@ -1,0 +1,12 @@
+--- a/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
++++ b/arch/arm64/boot/dts/qcom/sdm845-oneplus-common.dtsi
+@@ -757,10 +757,6 @@ &gpu {
+ 	status = "okay";
+ };
+
+-&gpu_zap_shader {
+-	firmware-name = "qcom/sdm845/OnePlus/enchilada/a630_zap.mbn";
+-};
+-
+ &i2c3 {
+ 	clock-frequency = <400000>;

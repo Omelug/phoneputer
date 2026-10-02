@@ -1,0 +1,5 @@
+result
+bootimg.cfg
+zImage
+initrd.img
+*.dtb

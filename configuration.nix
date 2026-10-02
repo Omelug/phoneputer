@@ -86,6 +86,7 @@ in
   nix.settings.extra-sandbox-paths = [ "/nix/var/cache/ccache" ];
 
   boot.kernelPackages = lib.mkForce (pkgs.linuxPackagesFor customKernel);
+  system.boot.loader.kernelFile = "Image.gz";
 
   services.openssh.enable = true;
   services.openssh.settings.PermitRootLogin = "yes";
